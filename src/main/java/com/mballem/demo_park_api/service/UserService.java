@@ -6,7 +6,7 @@ import com.mballem.demo_park_api.dto.UserResponseDTO;
 import com.mballem.demo_park_api.entity.User;
 import com.mballem.demo_park_api.entity.enums.Role;
 import com.mballem.demo_park_api.repository.UserRepository;
-import com.mballem.demo_park_api.service.Exception.ResorceNotFoundException;
+import com.mballem.demo_park_api.service.exception.ResorceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
