@@ -6,7 +6,10 @@ import com.mballem.demo_park_api.dto.UserResponseDTO;
 import com.mballem.demo_park_api.entity.User;
 import com.mballem.demo_park_api.entity.enums.Role;
 import com.mballem.demo_park_api.repository.UserRepository;
+import com.mballem.demo_park_api.service.exception.PasswordInvalidException;
 import com.mballem.demo_park_api.service.exception.ResorceNotFoundException;
+import com.mballem.demo_park_api.service.exception.UsernameUniqueViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponseDTO findById(Long id){
-        User user = userRepository.findById(id).orElseThrow(() -> new ResorceNotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new ResorceNotFoundException(
+                String.format("Usuario id = %s não existe"
+                , id)));
         return new UserResponseDTO(user);
     }
 
@@ -35,21 +40,29 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO insert(UserCreateDTO createDTO){
-        User user = new User();
-        copyDtoToEntity(user, createDTO);
-        user = userRepository.save(user);
-        return new UserResponseDTO(user);
+        try {
+            User user = new User();
+            copyDtoToEntity(user, createDTO);
+            user = userRepository.save(user);
+            return new UserResponseDTO(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new UsernameUniqueViolationException(String.format("Username '%s' ja esta cadastrado no sistema"
+                    , createDTO.getUsername()));
+        }
     }
 
     @Transactional
     public UserResponseDTO updatePassword(Long id, UserPasswordDTO userPasswordDTO){
         User user = userRepository.findById(id).orElseThrow(() -> new ResorceNotFoundException("User not found"));
+
         if (!user.getPassword().equals(userPasswordDTO.getCurrentPassword())){
-            throw new RuntimeException("Senha atual está incorreta");
+            throw new PasswordInvalidException("Senha atual está incorreta");
         }
+
         if (!userPasswordDTO.getNewPassword().equals(userPasswordDTO.getConfirmPassword())){
-            throw new RuntimeException("Confirmação de senha não está correta");
+            throw new PasswordInvalidException("Confirmação de senha não está correta");
         }
+
         user.setPassword(userPasswordDTO.getNewPassword());
         user = userRepository.save(user);
         return new UserResponseDTO(user);
