@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -33,9 +35,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponseDTO> findAll(Pageable pageable){
-        Page<User> allUser = userRepository.findAll(pageable);
-        return allUser.map(x -> new UserResponseDTO(x));
+    public List<UserResponseDTO> findAll(){
+        List<User> allUser = userRepository.findAll();
+        return allUser.stream().map(x -> new UserResponseDTO(x)).toList();
     }
 
     @Transactional

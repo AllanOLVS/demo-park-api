@@ -9,6 +9,10 @@ public class UserResponseDTO {
     private String username;
     private Role role;
 
+    public UserResponseDTO(){
+
+    }
+
     public UserResponseDTO(User user){
         this.id = user.getId();
         this.username = user.getUsername();
